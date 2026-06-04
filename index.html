@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SF Task Builder</title>
+<style>
+:root {
+  --navy:      #16325B;
+  --navy-lt:   #1C3D6E;
+  --white:     #FFFFFF;
+  --page-bg:   #EDF4FA;
+  --card-bg:   #FFFFFF;
+  --sect-bg:   #F3F3F3;
+  --sect-txt:  #181818;
+  --lbl:       #706E6B;
+  --val:       #080707;
+  --link:      #0070D2;
+  --divider:   #DDDBDA;
+  --orange:    #E44D26;
+  --pencil:    #AEAEAE;
+  --edit-col:  #F0F7FF;
+  --edit-bdr:  #C9E0F5;
+  --danger:    #C23934;
+  --success:   #2E844A;
+  --warn:      #FFB75D;
+  --shadow:    rgba(0,0,0,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:var(--page-bg);min-height:100vh;font-size:13px}
+
+/* ── App Bar ── */
+.appbar{background:var(--navy);color:#fff;user-select:none}
+.appbar-strip{height:6px;background:var(--navy)}
+.appbar-nav{padding:6px 20px;font-size:11px;color:#b0cce0;display:flex;align-items:center;gap:6px}
+.appbar-nav span{opacity:.7}
+.appbar-record{padding:10px 20px 0;display:flex;align-items:flex-end;gap:14px;min-height:56px}
+.rec-icon{width:36px;height:36px;background:var(--link);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px}
+.rec-meta{flex:1}
+.rec-type{font-size:11px;color:#90b8d4;margin-bottom:3px}
+.rec-name-wrap{display:flex;align-items:center;gap:8px}
+#taskNameInput{font-size:20px;font-weight:700;color:#fff;background:transparent;border:none;outline:none;width:100%;cursor:text;letter-spacing:-.2px}
+#taskNameInput:focus{background:rgba(255,255,255,.1);border-radius:4px;padding:2px 8px;margin:-2px -8px}
+#taskNameInput[readonly]{cursor:default}
+.appbar-actions{display:flex;gap:8px;align-items:center;padding-bottom:8px;flex-shrink:0}
+.btn-mode{padding:6px 16px;border-radius:20px;border:1.5px solid rgba(255,255,255,.55);background:transparent;color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn-mode:hover{background:rgba(255,255,255,.15)}
+.btn-mode.preview-active{background:#fff;color:var(--navy);border-color:#fff}
+
+/* ── Tabs ── */
+.tabs{background:#fff;display:flex;align-items:flex-end;padding:0 20px;border-bottom:1px solid var(--divider);position:sticky;top:0;z-index:10}
+.tab{padding:11px 18px;font-size:13px;cursor:pointer;color:var(--lbl);border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s}
+.tab.active{color:var(--link);font-weight:600;border-bottom-color:var(--link)}
+.tab:hover:not(.active){color:var(--sect-txt)}
+
+/* ── Build toolbar ── */
+.build-bar{background:#EBF5FB;border-bottom:1px solid #C2DFF0;padding:7px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.build-bar.hidden{display:none}
+.build-label{font-size:11px;font-weight:700;color:var(--link);letter-spacing:.4px;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.build-sep{color:var(--divider);font-size:16px}
+.build-hint{font-size:11px;color:#3E3E3C}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--link);color:#fff;border-color:var(--link)}
+.btn-primary:hover{background:#005FB2;border-color:#005FB2}
+.btn-outline{background:#fff;color:var(--link);border-color:#9EC4E8}
+.btn-outline:hover{background:#EBF5FB}
+.btn-ghost{background:transparent;color:var(--lbl);border-color:transparent;padding:4px 8px;font-size:11px;font-weight:500}
+.btn-ghost:hover{background:#F0F0F0;border-color:var(--divider);color:var(--sect-txt)}
+.btn-danger-ghost{background:transparent;color:var(--danger);border-color:transparent;padding:4px 7px;font-size:11px}
+.btn-danger-ghost:hover{background:#FEEEED;border-color:#EAB9B8}
+.btn-sm{padding:3px 10px;font-size:11px}
+.btn-xs{padding:2px 7px;font-size:10px;border-radius:3px}
+
+/* ── Page ── */
+.sf-page{padding:16px 20px;max-width:1100px;margin:0 auto}
+.sf-card{background:var(--card-bg);border-radius:4px;box-shadow:0 2px 6px var(--shadow);overflow:visible}
+
+/* ── Section header ── */
+.sec-hdr{display:flex;align-items:center;gap:9px;padding:0 16px;min-height:38px;border-bottom:1px solid var(--divider);position:relative}
+.sec-hdr.regular{background:var(--sect-bg);border-top:1px solid var(--divider)}
+.sec-hdr.object-type{background:#fff;border-top:1px solid var(--divider)}
+.sec-chevron{color:var(--lbl);font-size:10px;cursor:pointer;width:14px;text-align:center;flex-shrink:0;transition:transform .2s}
+.sec-chevron.collapsed{transform:rotate(-90deg)}
+.sec-obj-icon{width:20px;height:20px;background:var(--orange);border-radius:3px;flex-shrink:0}
+.sec-title{font-size:13px;font-weight:700;color:var(--sect-txt);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sec-title-input{font-size:13px;font-weight:700;color:var(--sect-txt);border:1px solid var(--link);border-radius:3px;padding:2px 8px;outline:none;flex:1;min-width:0;background:#fff;box-shadow:0 0 0 3px rgba(0,112,210,.12)}
+.sec-ctrls{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.sec-ctrls.hidden{display:none}
+.sec-dropdown{margin-left:auto;color:var(--lbl);font-size:12px;cursor:pointer}
+
+/* ── Field row ── */
+.field-grid{display:grid;grid-template-columns:1fr 1px 1fr}
+.field-row{display:contents}
+.field-divider-v{background:var(--divider);grid-row:span 1}
+
+.f-cell{padding:8px 16px 9px;border-bottom:1px solid #EEEEEE;display:flex;flex-direction:column;justify-content:center;min-height:52px;position:relative;transition:background .12s}
+.f-cell.edit-hover:hover{background:var(--edit-col)}
+.f-cell .f-actions{opacity:0;transition:opacity .15s;position:absolute;top:5px;right:6px;display:flex;gap:3px}
+.f-cell:hover .f-actions{opacity:1}
+.f-cell.always-show .f-actions{opacity:1}
+
+.f-label-row{display:flex;align-items:center;gap:4px;margin-bottom:2px}
+.f-label{font-size:11px;color:var(--lbl);line-height:1.2}
+.f-info{font-size:10px;color:var(--lbl);cursor:help}
+.f-type-badge{font-size:9px;font-weight:700;color:#A0A0A0;background:#F0F0F0;border-radius:2px;padding:1px 4px;letter-spacing:.2px}
+.f-val{font-size:13px;color:var(--val);line-height:1.35;word-break:break-word}
+.f-val.link{color:var(--link);cursor:pointer;text-decoration:underline}
+.f-val.empty{color:#C0C0C0;font-style:italic;font-size:12px}
+.f-pencil{position:absolute;right:9px;bottom:7px;font-size:11px;color:var(--pencil);transition:color .12s}
+/* ── Preview inline-edit ── */
+.f-cell.preview-cell{cursor:pointer}
+.f-cell.preview-cell:hover{background:#F5FAFF}
+.f-cell.preview-cell:hover .f-pencil{color:var(--link)}
+.f-cell.preview-cell:hover .f-val{color:var(--link)}
+.f-cell.preview-cell .f-val.empty::before{content:'—';color:#C0C0C0;font-style:italic;font-size:12px}
+.f-inline-inp{width:100%;font-size:13px;padding:5px 8px;border:1.5px solid var(--link);border-radius:4px;outline:none;background:#fff;box-shadow:0 0 0 3px rgba(0,112,210,.12);font-family:Arial,sans-serif;box-sizing:border-box;margin-top:2px;resize:vertical}
+/* ── Drag & drop reorder ── */
+.f-drag-handle{position:absolute;left:4px;top:8px;color:#C8C8C8;font-size:15px;cursor:grab;user-select:none;line-height:1;opacity:0;transition:opacity .15s;padding:2px 3px;letter-spacing:-1px}
+.f-cell.edit-hover:hover .f-drag-handle{opacity:1}
+.f-cell.dragging{opacity:.3;background:#EBF5FB !important}
+.f-cell.drop-before{border-top:3px solid var(--link) !important}
+.f-cell.drop-after{border-bottom:3px solid var(--link) !important}
+
+/* ── Add-field placeholder ── */
+.f-cell.add-ph{cursor:pointer;border-bottom:1px dashed #C9E0F5;background:#FAFCFF}
+.f-cell.add-ph:hover{background:var(--edit-col)}
+.add-ph-inner{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--link);font-size:12px;opacity:.65;height:36px}
+.f-cell.add-ph:hover .add-ph-inner{opacity:1}
+
+/* ── Section add-field row ── */
+.sec-add-row{display:none}
+.edit-active .sec-add-row{display:contents}
+
+/* ── Add section area ── */
+.add-sec-wrap{padding:14px 0;text-align:center;display:none}
+.edit-active .add-sec-wrap{display:block}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#032D60;color:#fff;padding:9px 20px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Modal ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-bg.hidden{display:none}
+.modal{background:#fff;border-radius:8px;width:500px;max-width:100%;box-shadow:0 12px 40px rgba(0,0,0,.28);display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
+.modal-hdr{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-hdr h3{font-size:14px;font-weight:700}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.75);font-size:20px;cursor:pointer;line-height:1;padding:0 2px}
+.modal-close:hover{color:#fff}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.modal-footer{padding:12px 20px;border-top:1px solid var(--divider);display:flex;justify-content:flex-end;gap:9px;flex-shrink:0}
+
+/* ── Modal form ── */
+.fg{margin-bottom:17px}
+.fg:last-child{margin-bottom:0}
+.fg label{display:block;font-size:12px;font-weight:700;color:var(--sect-txt);margin-bottom:5px}
+.fg input[type=text],.fg input[type=number],.fg input[type=date],.fg select,.fg textarea{width:100%;padding:8px 10px;border:1px solid var(--divider);border-radius:4px;font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s;background:#fff}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--link);box-shadow:0 0 0 3px rgba(0,112,210,.14)}
+.fg small{font-size:11px;color:var(--lbl);margin-top:3px;display:block}
+
+/* ── Type groups ── */
+.type-groups{display:flex;flex-direction:column;gap:12px}
+.type-group-label{font-size:10px;font-weight:700;color:var(--lbl);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.type-row{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.type-card{border:1.5px solid var(--divider);border-radius:5px;padding:7px 9px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .15s;user-select:none}
+.type-card:hover{border-color:#9EC4E8;background:#F5FAFF}
+.type-card.selected{border-color:var(--link);background:#EBF5FB;box-shadow:0 0 0 1px var(--link)}
+.type-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.type-name{font-size:11px;font-weight:700;color:var(--sect-txt)}
+.type-desc{font-size:9px;color:var(--lbl);line-height:1.3}
+
+/* ── Picklist options ── */
+.opts-box{border:1px solid var(--divider);border-radius:4px;overflow:hidden;margin-top:8px}
+.opt-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #F0F0F0}
+.opt-item:last-of-type{border-bottom:none}
+.opt-item input{flex:1;border:none;outline:none;font-size:13px;background:transparent}
+.opt-item input:focus{background:#FFFBEA}
+.opt-add-row{padding:7px 10px;display:flex;gap:8px;align-items:center;background:#FAFAFA;border-top:1px solid var(--divider)}
+.opt-add-input{flex:1;border:1px solid var(--divider);border-radius:4px;padding:5px 8px;font-size:12px;outline:none}
+.opt-add-input:focus{border-color:var(--link)}
+
+/* ── Checkbox toggle ── */
+.toggle-row{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--sect-txt)}
+.toggle-row input[type=checkbox]{accent-color:var(--link);width:14px;height:14px;cursor:pointer}
+
+/* ── Confirm dialog ── */
+.confirm-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:flex;align-items:center;justify-content:center}
+.confirm-bg.hidden{display:none}
+.confirm-box{background:#fff;border-radius:8px;width:360px;box-shadow:0 8px 32px rgba(0,0,0,.25);overflow:hidden}
+.confirm-hdr{background:#fff;padding:20px 20px 8px;font-size:15px;font-weight:700;color:var(--sect-txt)}
+.confirm-body{padding:0 20px 16px;font-size:13px;color:var(--lbl);line-height:1.5}
+.confirm-footer{padding:12px 20px;border-top:1px solid var(--divider);display:flex;justify-content:flex-end;gap:8px}
+
+/* ── Empty state ── */
+.empty-sec{padding:20px 16px;text-align:center;color:var(--lbl);font-size:12px;font-style:italic;border-bottom:1px solid #EEEEEE}
+
+/* ── Misc ── */
+.hidden{display:none!important}
+.drag-hint{font-size:10px;color:#B0B0B0;margin-left:auto;padding-right:4px}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- App bar -->
+  <div class="appbar">
+    <div class="appbar-strip"></div>
+    <div class="appbar-nav">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect width="12" height="12" rx="2" fill="#5A9FD4"/></svg>
+      Salesforce Task Builder
+    </div>
+    <div class="appbar-record">
+      <div class="rec-icon">📋</div>
+      <div class="rec-meta">
+        <div class="rec-type">Salesforce Task Builder</div>
+        <div class="rec-name-wrap">
+          <input id="taskNameInput" value="New Task" readonly />
+        </div>
+      </div>
+      <div class="appbar-actions">
+        <button class="btn-mode" id="btnExport" onclick="exportHTML()" style="font-size:11px;border-color:rgba(255,255,255,.4)">⬇ Export HTML</button>
+        <button class="btn-mode" id="btnMode" onclick="toggleMode()">✎&nbsp; Edit</button>
+      </div>
+    </div>
+    <div style="height:12px;background:var(--navy)"></div>
+  </div>
+
+  <!-- Build bar -->
+  <div class="build-bar hidden" id="buildBar">
+    <span class="build-label">🔧 Build Mode</span>
+    <span class="build-sep">|</span>
+    <span class="build-hint">Hover fields to edit/delete · Double-click section title to rename</span>
+    <span style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <span id="saveIndicator" style="font-size:11px;color:#2E844A;opacity:0;transition:opacity 1s">✓ Saved</span>
+      <button class="btn btn-ghost btn-sm" onclick="clearAll()" style="color:var(--danger);border-color:transparent">🗑 Clear All</button>
+    </span>
+  </div>
+
+  <!-- Form -->
+  <div class="sf-page">
+    <div class="sf-card" id="formCard"><!-- rendered --></div>
+    <div class="add-sec-wrap">
+      <button class="btn btn-outline" onclick="promptAddSection()">＋ Add Section</button>
+    </div>
+  </div>
+</div>
+
+<!-- Field Modal -->
+<div class="modal-bg hidden" id="fieldModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3 id="modalTitle">Add Field</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveField()">Save Field</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-bg hidden" id="confirmDlg">
+  <div class="confirm-box">
+    <div class="confirm-hdr" id="confirmTitle">Are you sure?</div>
+    <div class="confirm-body" id="confirmMsg"></div>
+    <div class="confirm-footer">
+      <button class="btn btn-outline" onclick="confirmResolve(false)">Cancel</button>
+      <button class="btn" style="background:var(--danger);color:#fff;border-color:var(--danger)" onclick="confirmResolve(true)">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════════
+let editMode = false;
+let _uid = 200;
+const uid = () => 'u' + (++_uid);
+
+// IS_SNAPSHOT: true in exported copies — prevents localStorage from overwriting embedded data
+const IS_SNAPSHOT = false;
+const state = /*STATE_JSON*/{"name":"New Task","sections":[]}/*END_STATE*/;
+
+// ════════════════════════════════════════════════════════════════
+// PERSISTENCE — localStorage + Export
+// ════════════════════════════════════════════════════════════════
+const LS_KEY = 'sfTaskBuilder_v1';
+let _saveTimer;
+
+function saveToLocal() {
+  if (IS_SNAPSHOT) return; // exported snapshots never write to localStorage
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ name: state.name, sections: state.sections }));
+    // Flash the save indicator
+    const ind = document.getElementById('saveIndicator');
+    if (ind) {
+      ind.style.opacity = '1';
+      clearTimeout(_saveTimer);
+      _saveTimer = setTimeout(() => { ind.style.opacity = '0'; }, 2000);
+    }
+  } catch(e) {}
+}
+
+function loadFromLocal() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    state.name = saved.name || 'New Task';
+    state.sections = saved.sections || [];
+    return true;
+  } catch(e) { return false; }
+}
+
+function clearAll() {
+  if (!confirm('Reset everything? This will clear all sections and fields.')) return;
+  state.name = 'New Task';
+  state.sections = [];
+  try { localStorage.removeItem(LS_KEY); } catch(e) {}
+  render();
+  toast('🗑 Cleared — starting fresh');
+}
+
+function exportHTML() {
+  try {
+    const src = document.documentElement.outerHTML;
+    const stateJson = JSON.stringify({ name: state.name, sections: state.sections });
+    // Embed current state and mark as snapshot so recipient's localStorage won't override it
+    let out = src
+      .replace('const IS_SNAPSHOT = false;', 'const IS_SNAPSHOT = true;')
+      .replace(/\/\*STATE_JSON\*\/[\s\S]*?\/\*END_STATE\*\//, `/*STATE_JSON*/${stateJson}/*END_STATE*/`);
+    const blob = new Blob([out], { type: 'text/html' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = (state.name || 'task').replace(/[^a-z0-9_\- ]/gi, '') + '.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✓ Exported — share the downloaded file');
+  } catch(e) {
+    toast('⚠ Export failed: ' + e.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════════════════
+function render() {
+  // Task name input
+  const inp = document.getElementById('taskNameInput');
+  inp.value = state.name;
+  inp.readOnly = !editMode;
+
+  // Mode button
+  const btn = document.getElementById('btnMode');
+  btn.textContent = editMode ? '✕  Exit Edit Mode' : '✎  Edit';
+  btn.classList.toggle('preview-active', editMode);
+
+  // Build bar
+  document.getElementById('buildBar').classList.toggle('hidden', !editMode);
+
+  // Form card
+  document.getElementById('formCard').className = 'sf-card' + (editMode ? ' edit-active' : '');
+  document.querySelector('.add-sec-wrap').style.display = editMode ? 'block' : 'none';
+  document.getElementById('formCard').innerHTML = state.sections.length
+    ? state.sections.map(renderSection).join('')
+    : `<div style="padding:48px 20px;text-align:center;color:var(--lbl)">
+        <div style="font-size:32px;margin-bottom:12px">📋</div>
+        <div style="font-size:14px;font-weight:600;color:var(--sect-txt);margin-bottom:6px">No sections yet</div>
+        <div style="font-size:12px">Switch to <strong>Edit Mode</strong> and click <strong>＋ Add Section</strong> to start building.</div>
+      </div>`;
+  saveToLocal();
+}
+
+function renderSection(sec) {
+  const fields = sec.fields;
+
+  // Build header (always regular style)
+  let hdr = `<div class="sec-hdr regular" id="sh_${sec.id}">`;
+  hdr += `<span class="sec-chevron ${sec.collapsed?'collapsed':''}" onclick="toggleSec('${sec.id}')">▼</span>`;
+  hdr += `<span class="sec-title" id="st_${sec.id}" ondblclick="renameSection('${sec.id}')" title="Double-click to rename">${esc(sec.title)}</span>`;
+  if (editMode) {
+    hdr += `<div class="sec-ctrls">
+      <button class="btn btn-ghost btn-xs" onclick="renameSection('${sec.id}')">✎ Rename</button>
+      <button class="btn btn-ghost btn-xs" style="color:var(--link)" onclick="openAddField('${sec.id}')">＋ Field</button>
+      <button class="btn btn-danger-ghost btn-xs" onclick="deleteSection('${sec.id}')">🗑</button>
+    </div>`;
+  }
+  hdr += `</div>`;
+
+  // Build body
+  const bodyStyle = sec.collapsed ? 'display:none' : '';
+  let body = `<div id="sb_${sec.id}" style="${bodyStyle}">`;
+  body += `<div class="field-grid" id="fg_${sec.id}">`;
+
+  if (fields.length === 0) {
+    body += `<div style="grid-column:1/-1"><div class="empty-sec">No fields yet${editMode ? ' — click ＋ Field to add one' : ''}</div></div>`;
+  } else {
+    for (let i = 0; i < fields.length; i += 2) {
+      const L = fields[i];
+      const R = fields[i + 1] || null;
+      body += renderFCell(sec.id, L, false, i);
+      body += `<div class="field-divider-v"></div>`;
+      body += R ? renderFCell(sec.id, R, false, i + 1) : `<div class="f-cell" style="border-bottom:1px solid #EEEEEE"></div>`;
+    }
+  }
+
+  // Add-field placeholder row (edit mode only via CSS)
+  body += `<div class="sec-add-row" style="display:${editMode?'contents':'none'}">
+    <div class="f-cell add-ph" onclick="openAddField('${sec.id}')">
+      <div class="add-ph-inner">＋ Add Field</div>
+    </div>
+    <div class="field-divider-v"></div>
+    <div class="f-cell" style="background:#FAFCFF;border-bottom:1px dashed #C9E0F5"></div>
+  </div>`;
+
+  body += `</div></div>`;
+  return hdr + body;
+}
+
+function renderFCell(secId, f, alwaysShow, idx) {
+  const dv = displayVal(f);
+  const isEmpty = dv === '';
+  const typeBadges = {
+    text:'Aa', textarea:'¶', richtextarea:'RTF',
+    number:'123', currency:'$', percent:'%',
+    date:'DATE', datetime:'D/T', time:'TIME',
+    email:'@', phone:'☎', url:'URL',
+    picklist:'LIST', multipicklist:'⊞', checkbox:'BOOL',
+    autonumber:'AUTO'
+  };
+
+  const canInline = !editMode && f.type !== 'autonumber';
+  const dragAttrs = editMode
+    ? `draggable="true" ondragstart="onFDragStart(event,'${secId}',${idx})" ondragover="onFDragOver(event,'${secId}',${idx})" ondragleave="onFDragLeave(event)" ondrop="onFDrop(event,'${secId}',${idx})" ondragend="onFDragEnd(event)"`
+    : '';
+  let cell = `<div class="f-cell ${editMode ? 'edit-hover' : (canInline ? 'preview-cell' : '')}" id="fc_${f.id}" ${dragAttrs}${canInline ? ` onclick="startInlineEdit('${secId}','${f.id}')"` : ''}>`;
+  if (editMode) cell += `<span class="f-drag-handle" title="Drag to reorder">⠿</span>`;
+  cell += `<div class="f-label-row">
+    <span class="f-label">${esc(f.label)}</span>
+    ${f.info ? '<span class="f-info" title="More info available">ⓘ</span>' : ''}
+    ${editMode ? `<span class="f-type-badge">${typeBadges[f.type]||'Aa'}</span>` : ''}
+  </div>`;
+  cell += `<span class="f-val${f.link ? ' link' : ''}${isEmpty ? ' empty' : ''}">${isEmpty ? '—' : esc(dv)}</span>`;
+
+  if (!editMode) {
+    cell += `<span class="f-pencil" title="Click to edit">✎</span>`;
+  } else {
+    cell += `<div class="f-actions">
+      <button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openEditField('${secId}','${f.id}')" title="Edit field">⚙ Edit</button>
+      <button class="btn btn-danger-ghost btn-xs" onclick="event.stopPropagation();deleteField('${secId}','${f.id}')" title="Delete field">✕</button>
+    </div>`;
+  }
+  cell += `</div>`;
+  return cell;
+}
+
+function displayVal(f) {
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if (f.type === 'checkbox') return f.value ? '✔  Checked' : '☐  Unchecked';
+  if (!f.value && f.value !== 0) return '';
+  const v = String(f.value);
+  if (f.type === 'date') {
+    try { const [y,m,d]=v.split('-'); return `${MON[parseInt(m)-1]} ${d.padStart(2,'0')}, ${y}`; }
+    catch(e) { return v; }
+  }
+  if (f.type === 'datetime') {
+    try { const dt=new Date(v); return dt.toLocaleDateString('en-US',{month:'short',day:'2-digit',year:'numeric'})+' '+dt.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}); }
+    catch(e) { return v; }
+  }
+  if (f.type === 'currency') {
+    const n = parseFloat(v); return isNaN(n) ? v : '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+  if (f.type === 'percent') return v ? v+'%' : '';
+  if (f.type === 'autonumber') return 'AUTO-'+String(v).padStart(4,'0');
+  if (f.type === 'url' && v && !v.startsWith('http')) return 'https://'+v;
+  return v;
+}
+
+// ════════════════════════════════════════════════════════════════
+// FIELD DRAG & DROP REORDER (edit mode)
+// ════════════════════════════════════════════════════════════════
+let _drag = null;
+
+function _clearDragClasses() {
+  document.querySelectorAll('.dragging,.drop-before,.drop-after').forEach(el =>
+    el.classList.remove('dragging','drop-before','drop-after'));
+}
+
+function onFDragStart(e, secId, idx) {
+  _drag = { secId, idx };
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', ''); // required for Firefox
+  setTimeout(() => e.target.classList.add('dragging'), 0);
+}
+
+function onFDragOver(e, secId, idx) {
+  if (!_drag) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  _clearDragClasses();
+  if (_drag.secId === secId && _drag.idx === idx) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  e.currentTarget.classList.add(e.clientY < rect.top + rect.height / 2 ? 'drop-before' : 'drop-after');
+}
+
+function onFDragLeave(e) {
+  e.currentTarget.classList.remove('drop-before','drop-after');
+}
+
+function onFDragEnd(e) {
+  _clearDragClasses();
+  _drag = null;
+}
+
+function onFDrop(e, secId, targetIdx) {
+  e.preventDefault();
+  _clearDragClasses();
+  if (!_drag || _drag.secId !== secId) { _drag = null; return; }
+
+  const fromIdx = _drag.idx;
+  _drag = null;
+  if (fromIdx === targetIdx) return;
+
+  const sec = state.sections.find(s => s.id === secId);
+  if (!sec) return;
+
+  const rect = e.currentTarget.getBoundingClientRect();
+  const insertBefore = e.clientY < rect.top + rect.height / 2;
+  let toIdx = insertBefore ? targetIdx : targetIdx + 1;
+  if (fromIdx < toIdx) toIdx--;
+  toIdx = Math.max(0, Math.min(toIdx, sec.fields.length - 1));
+  if (fromIdx === toIdx) return;
+
+  const [moved] = sec.fields.splice(fromIdx, 1);
+  sec.fields.splice(toIdx, 0, moved);
+  render();
+  toast('↕ Field reordered');
+}
+
+// ════════════════════════════════════════════════════════════════
+// INLINE VALUE EDITING (preview mode)
+// ════════════════════════════════════════════════════════════════
+function startInlineEdit(secId, fieldId) {
+  const sec = state.sections.find(s => s.id === secId);
+  const f   = sec?.fields.find(x => x.id === fieldId);
+  if (!f || f.type === 'autonumber') return;
+
+  // Checkbox: just toggle on click, no input needed
+  if (f.type === 'checkbox') {
+    f.value = !f.value;
+    const valEl = document.querySelector(`#fc_${fieldId} .f-val`);
+    if (valEl) { valEl.textContent = f.value ? '✔  Checked' : '☐  Unchecked'; valEl.classList.remove('empty'); }
+    saveToLocal();
+    return;
+  }
+
+  const cell = document.getElementById('fc_' + fieldId);
+  if (!cell || cell.dataset.editing) return;
+  cell.dataset.editing = '1';
+
+  const valEl    = cell.querySelector('.f-val');
+  const pencilEl = cell.querySelector('.f-pencil');
+  if (valEl)    valEl.style.display    = 'none';
+  if (pencilEl) pencilEl.style.display = 'none';
+
+  // Build the right input for the field type
+  let inp;
+  if (f.type === 'picklist' || f.type === 'multipicklist') {
+    inp = document.createElement('select');
+    [['','— None —'], ...(f.options||[]).map(o=>[o,o])].forEach(([v,t]) => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = t;
+      if (f.value === v) o.selected = true;
+      inp.appendChild(o);
+    });
+  } else {
+    inp = document.createElement(f.type === 'textarea' || f.type === 'richtextarea' ? 'textarea' : 'input');
+    const typeMap = {date:'date', datetime:'datetime-local', time:'time',
+                     number:'number', currency:'number', percent:'number',
+                     email:'email', phone:'tel', url:'url'};
+    if (inp.tagName === 'INPUT') inp.type = typeMap[f.type] || 'text';
+    if (f.type === 'currency') inp.step = '0.01';
+    if (f.type === 'textarea' || f.type === 'richtextarea') inp.rows = 2;
+    inp.value = f.value || '';
+  }
+  inp.className = 'f-inline-inp';
+
+  const commit = () => {
+    f.value = inp.value;
+    cleanup();
+    // Refresh display in-place (no full re-render)
+    const dv = displayVal(f);
+    const mt = dv === '';
+    if (valEl) {
+      valEl.textContent = mt ? '—' : dv;
+      valEl.className   = `f-val${f.link?' link':''}${mt?' empty':''}`;
+      valEl.style.display = '';
+    }
+    if (pencilEl) pencilEl.style.display = '';
+    saveToLocal();
+  };
+
+  const cleanup = () => { delete cell.dataset.editing; inp.remove(); };
+
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && inp.tagName !== 'TEXTAREA') { e.preventDefault(); inp.blur(); }
+    if (e.key === 'Escape') {
+      inp.removeEventListener('blur', commit);
+      cleanup();
+      if (valEl)    valEl.style.display    = '';
+      if (pencilEl) pencilEl.style.display = '';
+    }
+  });
+
+  cell.appendChild(inp);
+  setTimeout(() => {
+    inp.focus();
+    if (inp.select && !['date','datetime-local','time'].includes(inp.type||'')) inp.select();
+  }, 0);
+}
+
+// ════════════════════════════════════════════════════════════════
+// ACTIONS — MODE / SECTIONS
+// ════════════════════════════════════════════════════════════════
+function toggleMode() {
+  editMode = !editMode;
+  const inp = document.getElementById('taskNameInput');
+  if (!editMode && inp) state.name = inp.value || state.name;
+  render();
+  toast(editMode ? '🔧 Build Mode — click ⚙ Edit to configure fields' : '👁 Preview Mode');
+}
+
+document.getElementById('taskNameInput').addEventListener('change', e => {
+  state.name = e.target.value || 'New Task';
+});
+
+function toggleSec(secId) {
+  const sec = state.sections.find(s => s.id === secId);
+  if (sec) { sec.collapsed = !sec.collapsed; render(); }
+}
+
+function renameSection(secId) {
+  const sec = state.sections.find(s => s.id === secId);
+  if (!sec) return;
+  const span = document.getElementById('st_' + secId);
+  if (!span) return;
+  const inp = document.createElement('input');
+  inp.className = 'sec-title-input';
+  inp.value = sec.title;
+  inp.maxLength = 80;
+  const commit = () => {
+    sec.title = inp.value.trim() || sec.title;
+    render();
+  };
+  inp.onblur = commit;
+  inp.onkeydown = e => {
+    if (e.key === 'Enter') inp.blur();
+    if (e.key === 'Escape') { inp.onblur = null; render(); }
+  };
+  span.replaceWith(inp);
+  inp.focus(); inp.select();
+}
+
+function promptAddSection() {
+  addSection();
+}
+
+function addSection() {
+  const sec = { id: uid(), title: 'New Section', collapsed: false, fields: [] };
+  state.sections.push(sec);
+  render();
+  // Auto-focus rename
+  setTimeout(() => renameSection(sec.id), 60);
+  toast('Section added');
+}
+
+async function deleteSection(secId) {
+  const sec = state.sections.find(s => s.id === secId);
+  if (!sec) return;
+  const ok = await confirm2(`Delete section "${sec.title}"?`, 'This will remove the section and all its fields.');
+  if (!ok) return;
+  state.sections = state.sections.filter(s => s.id !== secId);
+  render();
+  toast('Section deleted');
+}
+
+// ════════════════════════════════════════════════════════════════
+// FIELD MODAL
+// ════════════════════════════════════════════════════════════════
+let mCtx = {}; // { secId, fieldId|null, tmp:fieldObj }
+
+function openAddField(secId) {
+  mCtx = {
+    secId, fieldId: null,
+    tmp: { id: uid(), label:'', type:'text', value:'', options:[], link:false, info:false }
+  };
+  document.getElementById('modalTitle').textContent = 'Add Field';
+  buildModalBody();
+  document.getElementById('fieldModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('fLabel')?.focus(), 80);
+}
+
+function openEditField(secId, fieldId) {
+  const sec = state.sections.find(s => s.id === secId);
+  const f = sec?.fields.find(x => x.id === fieldId);
+  if (!f) return;
+  mCtx = { secId, fieldId, tmp: JSON.parse(JSON.stringify(f)) };
+  document.getElementById('modalTitle').textContent = 'Edit Field';
+  buildModalBody();
+  document.getElementById('fieldModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('fLabel')?.focus(), 80);
+}
+
+function closeModal() {
+  document.getElementById('fieldModal').classList.add('hidden');
+  mCtx = {};
+}
+
+function buildModalBody() {
+  const f = mCtx.tmp;
+
+  // ── Grouped Salesforce field types ────────────────────────────
+  const typeGroups = [
+    { label:'Text', types:[
+      { v:'text',         icon:'Aa', name:'Text',        desc:'Up to 255 chars'   },
+      { v:'textarea',     icon:'≡',  name:'Text Area',   desc:'Multi-line'        },
+      { v:'richtextarea', icon:'B',  name:'Rich Text',   desc:'Formatted text'    },
+    ]},
+    { label:'Numbers & Finance', types:[
+      { v:'number',   icon:'#', name:'Number',   desc:'Integer / decimal' },
+      { v:'currency', icon:'$', name:'Currency', desc:'Money value'       },
+      { v:'percent',  icon:'%', name:'Percent',  desc:'e.g. 75%'          },
+    ]},
+    { label:'Date & Time', types:[
+      { v:'date',     icon:'📅', name:'Date',      desc:'Date only'     },
+      { v:'datetime', icon:'🕐', name:'Date/Time', desc:'Date + time'   },
+      { v:'time',     icon:'⏱', name:'Time',      desc:'Time only'     },
+    ]},
+    { label:'Contact Info', types:[
+      { v:'email', icon:'✉', name:'Email', desc:'Validated format'  },
+      { v:'phone', icon:'☎', name:'Phone', desc:'Phone number'      },
+      { v:'url',   icon:'🔗', name:'URL',   desc:'Web address link'  },
+    ]},
+    { label:'Selection', types:[
+      { v:'picklist',      icon:'▾', name:'Picklist',     desc:'Single select'    },
+      { v:'multipicklist', icon:'⊞', name:'Multi-Select', desc:'Multiple values'  },
+      { v:'checkbox',      icon:'✓', name:'Checkbox',     desc:'True / False'     },
+    ]},
+    { label:'System', types:[
+      { v:'autonumber', icon:'⚡', name:'Auto Number', desc:'System-generated' },
+    ]},
+  ];
+
+  const typeGroupsHtml = typeGroups.map(g => `
+    <div>
+      <div class="type-group-label">${g.label}</div>
+      <div class="type-row">
+        ${g.types.map(t => `
+          <div class="type-card ${f.type===t.v?'selected':''}" onclick="selectType('${t.v}')">
+            <div class="type-icon">${t.icon}</div>
+            <div>
+              <div class="type-name">${t.name}</div>
+              <div class="type-desc">${t.desc}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  // ── Picklist options block ────────────────────────────────────
+  const needsOpts = f.type === 'picklist' || f.type === 'multipicklist';
+  let picklistBlock = '';
+  if (needsOpts) {
+    const opts = f.options || [];
+    const optRows = opts.map((o,i) => `
+      <div class="opt-item">
+        <input value="${esc(o)}" onchange="updateOpt(${i},this.value)" placeholder="Option ${i+1}" />
+        <button class="btn btn-danger-ghost btn-xs" onclick="removeOpt(${i})">✕</button>
+      </div>`).join('');
+    picklistBlock = `
+      <div class="fg">
+        <label>${f.type==='multipicklist'?'Multi-Select':'Picklist'} Options</label>
+        <div class="opts-box" id="optsList">
+          ${optRows}
+          <div class="opt-add-row">
+            <input class="opt-add-input" id="newOptInput" placeholder="New option…"
+              onkeydown="if(event.key==='Enter'){addOpt();event.preventDefault()}" />
+            <button class="btn btn-outline btn-sm" onclick="addOpt()">＋ Add</button>
+          </div>
+        </div>
+        <small>Press Enter or click ＋ Add</small>
+      </div>`;
+  }
+
+  // ── Default value input (context-aware per type) ──────────────
+  let valInput = '';
+  const v0 = f.value || '';
+  if (f.type === 'date') {
+    valInput = `<input type="date" value="${esc(v0)}" onchange="mCtx.tmp.value=this.value" />`;
+  } else if (f.type === 'datetime') {
+    valInput = `<input type="datetime-local" value="${esc(v0)}" onchange="mCtx.tmp.value=this.value" />`;
+  } else if (f.type === 'time') {
+    valInput = `<input type="time" value="${esc(v0)}" onchange="mCtx.tmp.value=this.value" />`;
+  } else if (f.type === 'number') {
+    valInput = `<input type="number" value="${esc(v0)}" oninput="mCtx.tmp.value=this.value" placeholder="0" />`;
+  } else if (f.type === 'currency') {
+    valInput = `<div style="display:flex;align-items:center;gap:6px">
+      <span style="color:var(--lbl);font-size:14px;font-weight:600">$</span>
+      <input type="number" style="flex:1" step="0.01" value="${esc(v0)}" oninput="mCtx.tmp.value=this.value" placeholder="0.00" />
+    </div>`;
+  } else if (f.type === 'percent') {
+    valInput = `<div style="display:flex;align-items:center;gap:6px">
+      <input type="number" style="flex:1" min="0" max="100" value="${esc(v0)}" oninput="mCtx.tmp.value=this.value" placeholder="0" />
+      <span style="color:var(--lbl);font-size:14px;font-weight:600">%</span>
+    </div>`;
+  } else if (f.type === 'email') {
+    valInput = `<input type="email" value="${esc(v0)}" oninput="mCtx.tmp.value=this.value" placeholder="name@example.com" />`;
+  } else if (f.type === 'phone') {
+    valInput = `<input type="tel" value="${esc(v0)}" oninput="mCtx.tmp.value=this.value" placeholder="+1 (555) 000-0000" />`;
+  } else if (f.type === 'url') {
+    valInput = `<input type="url" value="${esc(v0)}" oninput="mCtx.tmp.value=this.value" placeholder="https://example.com" />`;
+  } else if (f.type === 'checkbox') {
+    valInput = `<label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;margin-top:2px">
+      <input type="checkbox" ${f.value?'checked':''} onchange="mCtx.tmp.value=this.checked"
+        style="accent-color:var(--link);width:16px;height:16px;cursor:pointer" />
+      Default: Checked
+    </label>`;
+  } else if (f.type === 'textarea' || f.type === 'richtextarea') {
+    valInput = `<textarea rows="3" oninput="mCtx.tmp.value=this.value" placeholder="Enter default text…">${esc(v0)}</textarea>`;
+  } else if (f.type === 'picklist' || f.type === 'multipicklist') {
+    const opts = f.options || [];
+    const sel = opts.map(o=>`<option ${f.value===o?'selected':''} value="${esc(o)}">${esc(o)}</option>`).join('');
+    valInput = `<select onchange="mCtx.tmp.value=this.value"><option value="">— None —</option>${sel}</select>`;
+  } else if (f.type === 'autonumber') {
+    valInput = `<input type="text" value="AUTO-0001" readonly style="background:#F3F3F3;color:var(--lbl)" />
+      <small style="margin-top:4px">Automatically incremented by Salesforce. Format: AUTO-{0000}</small>`;
+  } else {
+    valInput = `<input type="text" value="${esc(v0)}" oninput="mCtx.tmp.value=this.value" placeholder="Enter default value" />`;
+  }
+
+  // ── Auto-link email/phone/url types ───────────────────────────
+  const autoLinkTypes = ['email','phone','url'];
+  if (autoLinkTypes.includes(f.type) && !('_linkSet' in mCtx)) {
+    mCtx.tmp.link = true; mCtx._linkSet = true;
+  }
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="fg">
+      <label>Field Label <span style="color:var(--danger)">*</span></label>
+      <input type="text" id="fLabel" value="${esc(f.label)}" oninput="mCtx.tmp.label=this.value"
+        placeholder="e.g. Task Status" maxlength="80" />
+    </div>
+    <div class="fg">
+      <label>Field Type</label>
+      <div class="type-groups">${typeGroupsHtml}</div>
+    </div>
+    ${picklistBlock}
+    <div class="fg">
+      <label>Default Value</label>
+      ${valInput}
+    </div>
+    <div class="fg">
+      <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer">
+        <input type="checkbox" ${(f.link||autoLinkTypes.includes(f.type))?'checked':''} onchange="mCtx.tmp.link=this.checked"
+          style="accent-color:var(--link);width:14px;height:14px;cursor:pointer;flex-shrink:0" />
+        Display value as a <strong>hyperlink</strong> (blue underline)
+      </label>
+    </div>
+    <div class="fg">
+      <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer">
+        <input type="checkbox" ${f.info?'checked':''} onchange="mCtx.tmp.info=this.checked"
+          style="accent-color:var(--link);width:14px;height:14px;cursor:pointer;flex-shrink:0" />
+        Show <strong>ⓘ info indicator</strong> next to label
+      </label>
+    </div>`;
+}
+
+function selectType(t) {
+  mCtx.tmp.type = t;
+  if ((t === 'picklist' || t === 'multipicklist') && !mCtx.tmp.options) mCtx.tmp.options = [];
+  mCtx.tmp.value = (t === 'checkbox') ? false : '';
+  delete mCtx._linkSet; // allow auto-link re-evaluation
+  buildModalBody();
+}
+
+function updateOpt(i, v) { mCtx.tmp.options[i] = v; }
+
+function removeOpt(i) {
+  mCtx.tmp.options.splice(i, 1);
+  if (mCtx.tmp.value && !mCtx.tmp.options.includes(mCtx.tmp.value)) mCtx.tmp.value = '';
+  buildModalBody();
+}
+
+function addOpt() {
+  const inp = document.getElementById('newOptInput');
+  const v = inp.value.trim();
+  if (!v) { inp.focus(); return; }
+  if (!mCtx.tmp.options) mCtx.tmp.options = [];
+  mCtx.tmp.options.push(v);
+  buildModalBody();
+  // Focus new input
+  setTimeout(() => { const el = document.getElementById('newOptInput'); if(el) el.focus(); }, 50);
+}
+
+function saveField() {
+  const f = mCtx.tmp;
+  const labelInp = document.getElementById('fLabel');
+  if (!f.label.trim()) {
+    labelInp.style.borderColor = 'var(--danger)';
+    labelInp.style.boxShadow = '0 0 0 3px rgba(194,57,52,.15)';
+    labelInp.focus();
+    return;
+  }
+  if ((f.type === 'picklist' || f.type === 'multipicklist') && (!f.options || f.options.length === 0)) {
+    toast('⚠ Add at least one option for this field type');
+    return;
+  }
+
+  const sec = state.sections.find(s => s.id === mCtx.secId);
+  if (!sec) return;
+
+  if (mCtx.fieldId) {
+    const idx = sec.fields.findIndex(x => x.id === mCtx.fieldId);
+    if (idx >= 0) sec.fields[idx] = f;
+    toast('✓ Field updated');
+  } else {
+    sec.fields.push(f);
+    toast('✓ Field added');
+  }
+  closeModal();
+  render();
+}
+
+async function deleteField(secId, fieldId) {
+  const sec = state.sections.find(s => s.id === secId);
+  const f = sec?.fields.find(x => x.id === fieldId);
+  if (!f) return;
+  const ok = await confirm2(`Delete field "${f.label}"?`, 'This cannot be undone.');
+  if (!ok) return;
+  sec.fields = sec.fields.filter(x => x.id !== fieldId);
+  render();
+  toast('Field deleted');
+}
+
+// ════════════════════════════════════════════════════════════════
+// CONFIRM DIALOG
+// ════════════════════════════════════════════════════════════════
+let _confirmResolve = null;
+
+function confirm2(title, msg) {
+  return new Promise(resolve => {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').textContent = msg;
+    document.getElementById('confirmDlg').classList.remove('hidden');
+    _confirmResolve = resolve;
+  });
+}
+
+function confirmResolve(val) {
+  document.getElementById('confirmDlg').classList.add('hidden');
+  if (_confirmResolve) { _confirmResolve(val); _confirmResolve = null; }
+}
+
+// Close confirm on backdrop click
+document.getElementById('confirmDlg').addEventListener('click', e => {
+  if (e.target === document.getElementById('confirmDlg')) confirmResolve(false);
+});
+
+// Close field modal on backdrop click
+document.getElementById('fieldModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('fieldModal')) closeModal();
+});
+
+// ════════════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════════════
+let _toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// ════════════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════════════
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════
+function init() {
+  if (!IS_SNAPSHOT) {
+    const restored = loadFromLocal();
+    if (restored && (state.sections.length > 0 || state.name !== 'New Task')) {
+      toast('📂 Restored from last session');
+    }
+  }
+  render();
+}
+init();
+</script>
+</body>
+</html>
